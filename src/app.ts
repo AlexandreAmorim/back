@@ -4,13 +4,13 @@ import { fastifyRateLimit } from '@fastify/rate-limit'
 import { fastify } from 'fastify'
 import { env } from './config/env'
 import { errorHandler } from './http/middlewares/errorHandler'
+import { authRoutes } from './http/routes/auth.routes'
 import { userRoutes } from './http/routes/user.routes'
 
 export const app = fastify({})
 
-// Registrar plugins
 app.register(fastifyCors, {
-  origin: true, // Em produção, especifique os domínios permitidos
+  origin: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 })
 
@@ -50,5 +50,5 @@ app.get('/', {
 app.setErrorHandler(errorHandler)
 
 // Registrar rotas
-//app.register(authRoutes, { prefix: '/auth' })
+app.register(authRoutes, { prefix: '/auth' })
 app.register(userRoutes, { prefix: '/api' })
