@@ -1,0 +1,926 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/lib/generated"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                    String              @id
+  userId                String?             @map("user_id") @db.Uuid
+  firstName             String              @map("first_name")
+  lastName              String?             @map("last_name")
+  document              String              @unique
+  documentSecondary     String?             @unique @map("document_secondary")
+  function              String?
+  warName               String?             @map("war_name")
+  rg                    String?             @unique
+  email                 String              @unique
+  password              String
+  phone                 String?
+  gender                String?
+  birthday              DateTime?           @db.Date
+  avatar                String?
+  token                 String?
+  isIntelligence        Boolean?            @default(false) @map("is_intelligence")
+  status                Boolean?            @default(true)
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime?           @updatedAt @map("updated_at")
+  Token                 Token[]
+  RoleUser              RoleUser[]
+  Management            Management[]
+  Allocation            Allocation[]
+  Sector                Sector[]
+  authOrders            Services[]          @relation("auth")
+  Services              Services[]
+  presenceStartedOrders Services[]          @relation("presence_started")
+  presenceEnded         Services[]          @relation("presence_ended")
+  missingOrders         Services[]          @relation("missing")
+  People                People[]
+  Vehicle               Vehicle[]
+  Result                Result[]
+  Systems               Systems[]
+  operatedOrders        Orders[]            @relation("operator")
+  Orders                Orders[]
+  ClosingForms          ClosingForms[]
+  Proximity             Proximity[]
+  Fleets                Fleets[]
+  Bdtd                  Bdtd[]
+  Gases                 Gases[]
+  Fuelings              Fuelings[]
+  PeopleOccurrences     PeopleOccurrences[]
+  Bopm                  Bopm[]
+  InvolvedCars          InvolvedCars[]
+  Involved              Involved[]
+  logs                  Log[]
+
+  @@map("users")
+  allocations Allocation[] @relation("authorize")
+}
+
+model Token {
+  id        Int       @id @default(autoincrement())
+  token     String    @unique
+  type      String
+  isRevoked Boolean?  @default(false) @map("is_revoked")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  @@map("tokens")
+}
+
+model Permission {
+  id             Int              @id @default(autoincrement())
+  slug           String           @unique
+  name           String           @unique
+  description    String?
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime?        @updatedAt @map("updated_at")
+  PermissionRole PermissionRole[]
+
+  @@map("permissions")
+}
+
+model Role {
+  id             Int              @id @default(autoincrement())
+  slug           String           @unique
+  name           String           @unique
+  description    String?
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime?        @updatedAt @map("updated_at")
+  PermissionRole PermissionRole[]
+  RoleUser       RoleUser[]
+
+  @@map("roles")
+}
+
+model PermissionRole {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  permissions  Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  permissionId Int        @map("permission_id")
+
+  roles  Role @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  roleId Int  @map("role_id")
+
+  @@map("permission_role")
+}
+
+model RoleUser {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  role   Role @relation(fields: [roleId], references: [id])
+  roleId Int  @map("role_id")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  @@map("role_user")
+}
+
+model Address {
+  id           Int            @id @default(autoincrement())
+  name         String?
+  zip          String?
+  street       String?
+  number       String?
+  complement   String?
+  neighborhood String?
+  city         String?
+  state        String?
+  country      String?
+  reference    String?
+  latitude     Decimal?
+  longitude    Decimal?
+  createdAt    DateTime       @default(now()) @map("user_id")
+  updatedAt    DateTime?      @default(now()) @map("updated_at")
+  Management   Management[]
+  Orders       Orders[]
+  Upajs        Upajs[]
+  ClosingForms ClosingForms[]
+  Bopm         Bopm[]
+
+  @@map("addresses")
+}
+
+model Management {
+  id        Int       @id @default(autoincrement())
+  level     String?
+  name      String    @unique
+  initials  String    @unique
+  phone     String?
+  isCore    Boolean?  @default(false) @map("is_core")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  address   Address @relation(fields: [addressId], references: [id])
+  addressId Int     @map("address_id")
+
+  ascendantId          Int?        @unique @map("ascendant_id")
+  AscendantSuccessor   Management? @relation("AscendantId", fields: [ascendantId], references: [id])
+  AscendantPredecessor Management? @relation("AscendantId")
+
+  coreId          Int?        @unique @map("core_id")
+  CoreSuccessor   Management? @relation("CoreId", fields: [coreId], references: [id])
+  CorePredecessor Management? @relation("CoreId")
+
+  Allocation   Allocation[]
+  Sector       Sector[]
+  Services     Services[]
+  Orders       Orders[]
+  ClosingForms ClosingForms[]
+  Proximity    Proximity[]
+  fleets       Fleets[]
+  Bdtd         Bdtd[]
+  Bopm         Bopm[]
+
+  @@map("managements")
+}
+
+model Allocation {
+  id        Int       @id @default(autoincrement())
+  startedAt DateTime  @map("started_at")
+  endedAt   DateTime? @map("ended_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  management   Management @relation(fields: [managementId], references: [id])
+  managementId Int        @map("management_id")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  auth    User?  @relation("authorize",fields: [authId], references: [id])
+  authId String? @map("auth_id")
+
+  @@map("allocations")
+}
+
+model Setting {
+  id                 Int       @id @default(autoincrement())
+  version            String?
+  profileUpdateLimit DateTime? @default(now()) @map("profile_update_limit")
+  managementsIds     String?   @map("managements_ids")
+  cortexStatus       Boolean?  @default(true) @map("cortex_status")
+  cortexToken        String?   @map("cortex_token")
+  cortexStatusPerson Boolean?  @default(true) @map("cortex_status_person")
+  cortexTokenPerson  String?   @map("cortex_token_person")
+  ceticStatus        Boolean?  @default(true) @map("cetic_status")
+  ceticToken         String?   @map("cetic_token")
+  sinalidStatus      Boolean?  @default(true) @map("sinalid_status")
+  sinalidToken       String?   @map("sinalid_token")
+  sinalidCookie      String?   @map("sinalid_cookie")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime? @default(now()) @map("updated_at")
+
+  @@map("settings")
+}
+
+model Sector {
+  id          Int       @id @default(autoincrement())
+  initials    String
+  name        String
+  description String?
+  status      Boolean   @default(true)
+  createdAt   DateTime? @default(now()) @map("created_at")
+  updatedAt   DateTime? @default(now()) @map("updated_at")
+
+  management   Management @relation(fields: [managementId], references: [id])
+  managementId Int        @map("management_id")
+
+  user         User           @relation(fields: [userId], references: [id])
+  userId       String         @map("user_id")
+  Services     Services[]
+  Orders       Orders[]
+  ClosingForms ClosingForms[]
+  Proximity    Proximity[]
+  Bdtd         Bdtd[]
+
+  @@map("sectors")
+}
+
+model Services {
+  id                String    @id
+  startedAt         DateTime  @map("started_at")
+  endedAt           DateTime  @map("ended_at")
+  presenceStartedAt DateTime? @map("presence_started_at")
+  presenceEndedAt   DateTime? @map("presence_ended_at")
+  description       String?
+  status            String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime? @default(now()) @map("updated_at")
+
+  sector   Sector @relation(fields: [sectorId], references: [id])
+  sectorId Int    @map("sector_id")
+
+  management   Management @relation(fields: [managementId], references: [id])
+  managementId Int        @map("management_id")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  auth   User   @relation("auth", fields: [authId], references: [id])
+  authId String @map("auth_id")
+
+  presenceStarted   User?   @relation("presence_started", fields: [presenceStartedId], references: [id])
+  presenceStartedId String? @map("presence_started_id")
+
+  presenceEnded   User?   @relation("presence_ended", fields: [presenceEndedId], references: [id])
+  presenceEndedId String? @map("presence_ended_id")
+
+  missing   User?       @relation("missing", fields: [missingId], references: [id])
+  missingId String?     @map("missing_id")
+  Orders    Orders[]
+  Proximity Proximity[]
+  Bdtd      Bdtd[]
+
+  @@map("services")
+}
+
+model People {
+  id                String    @id
+  name              String?
+  nickname          String?
+  birthday          DateTime? @db.Date
+  yearBirth         Int?      @map("year_birth")
+  gender            String?
+  mather            String?
+  father            String?
+  phone             String?
+  cellPhone         String?   @map("cell_phone")
+  document          String    @unique
+  documentSecondary String?   @unique @map("document_secondary")
+  placeBirth        String?   @map("place_birth")
+  description       String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime? @default(now()) @map("updated_at")
+
+  user   User?    @relation(fields: [userId], references: [id])
+  userId String?  @map("user_id")
+  Orders Orders[]
+
+  @@index([document, documentSecondary])
+  @@map("people")
+}
+
+model Vehicle {
+  id           String    @id
+  plate        String    @unique
+  chassi       String    @unique
+  color        String?
+  brand        String?
+  model        String?
+  engineNumber String?   @map("engine_number")
+  description  String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime? @default(now()) @map("updated_at")
+
+  user   User?    @relation(fields: [userId], references: [id])
+  userId String?  @map("user_id")
+  Orders Orders[]
+
+  @@index([plate, chassi])
+  @@map("vehicles")
+}
+
+model SituationTypes {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  @@map("situation_types")
+}
+
+model Result {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique
+  conduction Boolean   @default(false)
+  type       String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime? @default(now()) @map("updated_at")
+
+  user   User?    @relation(fields: [userId], references: [id])
+  userId String   @map("user_id")
+  Orders Orders[]
+
+  @@map("results")
+}
+
+model Systems {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  url       String?
+  status    Boolean   @default(true)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  user        User          @relation(fields: [userId], references: [id])
+  userId      String        @map("user_id")
+  OrderSystem OrderSystem[]
+
+  @@index([name])
+  @@map("systems")
+}
+
+model Orders {
+  id                String    @id
+  latitude          Decimal?
+  longitude         Decimal?
+  note              String?
+  description       String?
+  document          String?
+  documentSecondary String?   @map("document_secondary")
+  name              String?
+  birthday          DateTime? @db.Date
+  mather            String?
+  father            String?
+  plate             String?
+  chassi            String?
+
+  type   String?
+  status String?
+
+  color        String?
+  brand        String?
+  model        String?
+  engineNumber String? @map("engine_number")
+  placeBirth   String?
+  gender       String?
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  operator   User?   @relation("operator", fields: [operatorId], references: [id])
+  operatorId String? @map("operator_id")
+
+  vehicle   Vehicle? @relation(fields: [vehicleId], references: [id])
+  vehicleId String?  @map("vehicle_id")
+
+  person   People? @relation(fields: [personId], references: [id])
+  personId String? @map("person_id")
+
+  address   Address? @relation(fields: [addressId], references: [id])
+  addressId Int?     @map("address_id")
+
+  management   Management? @relation(fields: [managementId], references: [id])
+  managementId Int?        @map("management_id")
+
+  result   Result? @relation(fields: [resultId], references: [id])
+  resultId Int?    @map("result_id")
+
+  sector   Sector? @relation(fields: [sectorId], references: [id])
+  sectorId Int?    @map("sector_id")
+
+  service      Services?      @relation(fields: [serviceId], references: [id])
+  serviceId    String?        @map("service_id")
+  ClosingForms ClosingForms[]
+  OrderSystem  OrderSystem[]
+
+  @@map("orders")
+}
+
+model RegisterTypes {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime?      @default(now()) @map("updated_at")
+  ClosingForms ClosingForms[]
+
+  @@map("register_types")
+}
+
+model Motives {
+  id           Int            @id @default(autoincrement())
+  name         String
+  description  String
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime?      @default(now()) @map("updated_at")
+  ClosingForms ClosingForms[]
+
+  @@map("motives")
+}
+
+model Upajs {
+  id          Int    @id @default(autoincrement())
+  initials    String
+  name        String
+  institution String
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  address      Address        @relation(fields: [addressId], references: [id])
+  addressId    Int
+  ClosingForms ClosingForms[]
+  Bopm         Bopm[]
+  CivilPolices CivilPolices[]
+
+  @@map("upajs")
+}
+
+model EndSituation {
+  id           Int            @id @default(autoincrement())
+  name         String
+  type         String?
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime?      @default(now()) @map("updated_at")
+  ClosingForms ClosingForms[]
+
+  @@map("end_situations")
+}
+
+model ClosingForms {
+  id             String    @id
+  registerNumber String?   @map("register_number")
+  description    String?
+  status         String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime? @default(now()) @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  order   Orders @relation(fields: [orderId], references: [id])
+  orderId String @map("order_id")
+
+  management   Management? @relation(fields: [managementId], references: [id])
+  managementId Int?        @map("management_id")
+
+  sector   Sector? @relation(fields: [sectorId], references: [id])
+  sectorId Int?    @map("sector_id")
+
+  upaj   Upajs? @relation(fields: [upajId], references: [id])
+  upajId Int?   @map("upaj_id")
+
+  address   Address @relation(fields: [addressId], references: [id])
+  addressId Int     @map("address_id")
+
+  registerType   RegisterTypes? @relation(fields: [registerTypeId], references: [id])
+  registerTypeId Int?           @map("register_type_id")
+
+  endSituation   EndSituation? @relation(fields: [endSituationId], references: [id])
+  endSituationId Int?          @map("end_situation_id")
+
+  motive   Motives? @relation(fields: [motiveId], references: [id])
+  motiveId Int?     @map("motive_id")
+
+  @@map("closing_forms")
+}
+
+model Assistances {
+  id          Int         @id @default(autoincrement())
+  code        String
+  description String
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime?   @default(now()) @map("updated_at")
+  Proximity   Proximity[]
+
+  @@map("assistances")
+}
+
+model Proximity {
+  id          String  @id
+  store       String?
+  name        String
+  document    String?
+  phone       String?
+  email       String?
+  cep         String?
+  street      String?
+  number      String?
+  complement  String?
+  distric     String?
+  description String
+  lat         Int?
+  lng         Int?
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  assistance   Assistances @relation(fields: [assistanceId], references: [id])
+  assistanceId Int         @map("assistance_id")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  management   Management @relation(fields: [managementId], references: [id])
+  managementId Int        @map("management_id")
+
+  sector   Sector? @relation(fields: [sectorId], references: [id])
+  sectorId Int?    @map("sector_id")
+
+  service   Services? @relation(fields: [serviceId], references: [id])
+  serviceId String?   @map("service_id")
+
+  @@map("proximities")
+}
+
+model MakeCars {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime?   @default(now()) @map("updated_at")
+  ModelCars ModelCars[]
+  Fleets    Fleets[]
+
+  @@map("make_cars")
+}
+
+model ModelCars {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  make   MakeCars? @relation(fields: [makeId], references: [id])
+  makeId Int?      @map("make_id")
+  Fleets Fleets[]
+
+  @@map("model_cars")
+}
+
+model Gases {
+  id        Int      @id @default(autoincrement())
+  fantasy   String?
+  corporate String?
+  cnpj      String?
+  telephone String?
+  activity  String?
+  address   String?
+  district  String?
+  city      String?
+  state     String?
+  cep       String?
+  status    Boolean?
+  latitude  Int?
+  longitude Int?
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  user     User       @relation(fields: [userId], references: [id])
+  userId   String     @map("user_id")
+  Fuelings Fuelings[]
+
+  @@map("gases")
+}
+
+model Fleets {
+  id            String   @id
+  orderNumber   String?  @map("order_number")
+  plate         String   @unique
+  specialPlate  String?  @unique @map("special_plate")
+  color         String?
+  typeVehicle   String?  @map("type_vehicle")
+  fuel          String?
+  statusVehicle Boolean? @map("status_vehicle")
+  note          String?
+  rental        String?
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  management   Management? @relation(fields: [managementId], references: [id])
+  managementId Int?        @map("management_id")
+
+  makeCar   MakeCars @relation(fields: [makeCarId], references: [id])
+  makeCarId Int      @map("make_car_id")
+
+  modelCar   ModelCars @relation(fields: [modelCarId], references: [id])
+  modelCarId Int       @map("model_car_id")
+
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime?  @default(now()) @map("updated_at")
+  Bdtd      Bdtd[]
+  Fuelings  Fuelings[]
+
+  @@map("fleets")
+}
+
+model Bdtd {
+  id               String    @id
+  startedAt        DateTime  @default(now()) @map("started_at")
+  startedKm        String    @map("started_km")
+  endedAt          DateTime? @map("ended_at")
+  endedKm          String?   @map("ended_km")
+  admId            String?   @map("adm_id") @db.Uuid
+  latitudeMatch    Int?      @map("latitude_match")
+  longitudeMatch   Int?      @map("longitude_match")
+  latitudeRetreat  Int?      @map("latitude_retreat")
+  longitudeRetreat Int?      @map("longitude_retreat")
+  note             String?
+  active           Boolean?
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  fleet   Fleets @relation(fields: [fleetId], references: [id])
+  fleetId String @map("fleet_id")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  management   Management? @relation(fields: [managementId], references: [id])
+  managementId Int?        @map("management_id")
+
+  sector   Sector? @relation(fields: [sectorId], references: [id])
+  sectorId Int?    @map("sector_id")
+
+  service   Services?  @relation(fields: [serviceId], references: [id])
+  serviceId String?    @map("service_id")
+  Fuelings  Fuelings[]
+
+  @@map("bdtds")
+}
+
+model Fuelings {
+  id        String    @id
+  fuel      String?
+  liters    Float?
+  kmFueling String?   @map("km_fueling")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  bdtds  Bdtd   @relation(fields: [bdtdId], references: [id])
+  bdtdId String @map("bdtd_id")
+
+  fleets  Fleets @relation(fields: [fleetId], references: [id])
+  fleetId String @map("fleet_id")
+
+  gases   Gases @relation(fields: [gasesId], references: [id])
+  gasesId Int   @map("gases_id")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  @@map("fuelings")
+}
+
+model OrderSystem {
+  id Int @id @default(autoincrement())
+
+  orders  Orders @relation(fields: [orderId], references: [id])
+  orderId String @map("order_id")
+
+  system   Systems @relation(fields: [systemId], references: [id])
+  systemId Int     @map("system_id")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  @@map("order_system")
+}
+
+model PeopleOccurrences {
+  id                String    @id
+  name              String?   @db.VarChar
+  birthday          DateTime? @db.Date
+  gender            String?   @db.VarChar
+  mather            String?   @db.VarChar
+  father            String?   @db.VarChar
+  document          String?   @db.VarChar
+  documentSecondary String?   @map("document_secondary") @db.VarChar
+  marital           String?   @db.VarChar
+  email             Int?
+  phone             String?   @db.VarChar
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime? @default(now()) @map("updated_at")
+
+  user     User?      @relation(fields: [userId], references: [id])
+  userId   String?    @map("user_id")
+  Involved Involved[]
+
+  @@map("people_occurences")
+}
+
+model Bopm {
+  id          String @id
+  bopmNumber  Int?   @map("bopm_number")
+  serviceTeam String @map("service_team") @db.VarChar
+
+  originOfOccurrence String?   @map("origin_of_occurrence") @db.VarChar
+  typeOfRegistration String?   @map("type_of_registration") @db.VarChar
+  registrationNumber String?   @map("registration_number") @db.VarChar
+  typeOfWarrant      String?   @map("type_of_warrant") @db.VarChar
+  history            String?
+  isFinished         Boolean?  @map("is_finished")
+  schoolEnvironment  Boolean?  @map("school_environment")
+  others             String?   @db.VarChar
+  sector             String?   @db.VarChar
+  startedDateAt      DateTime? @map("started_date_at") @db.Date
+  startedTimeAt      DateTime? @map("started_time_at") @db.Time
+  finishDateAt       DateTime? @map("finish_date_at") @db.Date
+  finishTimeAt       DateTime? @map("finish_time_at") @db.Time
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  management   Management @relation(fields: [managementId], references: [id])
+  managementId Int        @map("management_id")
+
+  address     Address @relation(fields: [addressesId], references: [id])
+  addressesId Int     @map("addresses_id")
+
+  upaj         Upajs?         @relation(fields: [upajId], references: [id])
+  upajId       Int?           @map("upaj_id")
+  CivilPolices CivilPolices[]
+  InvolvedCars InvolvedCars[]
+  Seizures     Seizures[]
+  Involved     Involved[]
+
+  @@map("bopms")
+}
+
+model Involved {
+  id              String  @id
+  typeInvolvement String? @map("type_involvement") @db.VarChar
+  handcuffs       String? @db.VarChar
+  situation       String? @db.VarChar
+  qualified       String? @db.VarChar
+
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  bopm   Bopm   @relation(fields: [bopmId], references: [id])
+  bopmId String @map("bopm_id")
+
+  peopleOccurrence   PeopleOccurrences @relation(fields: [peopleOccurrenceId], references: [id])
+  peopleOccurrenceId String            @map("people_occurrence_id")
+
+  InvolvedCars InvolvedCars[]
+  Seizures     Seizures[]
+
+  @@map("involveds")
+}
+
+model CivilPolices {
+  id       String @id
+  name     String @db.VarChar
+  document String @db.VarChar
+  officeDp String @map("office_dp") @db.VarChar
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  upaj   Upajs @relation(fields: [upajId], references: [id])
+  upajId Int   @map("upaj_id")
+
+  bopm     Bopm       @relation(fields: [bopmId], references: [id])
+  bopmId   String     @map("bopm_id")
+  Seizures Seizures[]
+
+  @@map("civil_polices")
+}
+
+model InvolvedCars {
+  id           String  @id
+  motivation   String? @db.VarChar
+  plate        String? @db.VarChar
+  chassi       String? @db.VarChar
+  color        String? @db.VarChar
+  brand        String? @db.VarChar
+  model        String? @db.VarChar
+  conductor    String? @db.VarChar
+  exercise     String? @db.VarChar
+  crlv         String? @db.VarChar
+  cnh          String? @db.VarChar
+  category     String? @db.VarChar
+  uf           String? @db.VarChar
+  infringement String? @db.VarChar
+  year         String? @db.VarChar
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  bopm   Bopm   @relation(fields: [bopmId], references: [id])
+  bopmId String @map("bopm_id")
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  involved   Involved? @relation(fields: [involvedId], references: [id])
+  involvedId String?   @map("involved_id")
+
+  @@map("involved_cars")
+}
+
+model Seizures {
+  id          String  @id
+  brand       String? @db.VarChar
+  model       String? @db.VarChar
+  color       String? @db.VarChar
+  type        String? @db.VarChar
+  caliber     String? @db.VarChar
+  year        String? @db.VarChar
+  amount      String? @db.VarChar
+  measure     String? @db.VarChar
+  serial      String? @db.VarChar
+  plate       String? @db.VarChar
+  destiny     String? @db.VarChar
+  shaved      String? @db.VarChar
+  seizureType String  @map("seizure_type") @db.VarChar
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @map("updated_at")
+
+  bopm   Bopm   @relation(fields: [bopmId], references: [id])
+  bopmId String @map("bopm_id")
+
+  involved   Involved? @relation(fields: [involvedId], references: [id])
+  involvedId String?   @map("involved_id")
+
+  civilPolice   CivilPolices? @relation(fields: [civilPoliceId], references: [id])
+  civilPoliceId String?       @map("civil_police_id")
+
+  @@map("seizures")
+}
+
+model Log {
+  id         String   @id
+  action     String
+  resource   String
+  method     String
+  path       String
+  ip         String?
+  userAgent  String?  @map("user_agent") @db.VarChar
+  statusCode Int?     @map("status_code")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String? @map("user_id")
+
+  @@map("logs")
+}
+

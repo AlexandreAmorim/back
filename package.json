@@ -1,0 +1,43 @@
+{
+  "name": "back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/server.ts",
+    "build": "tsup src",
+    "start": "node dist/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "tsx prisma/seed.ts"
+  },
+  "keywords": [],
+  "author": "Milton Alexandre de Amorim",
+  "license": "ISC",
+  "devDependencies": {
+    "@biomejs/biome": "2.3.11",
+    "@types/node": "25.0.9",
+    "@types/pg": "8.16.0",
+    "dotenv": "17.2.3",
+    "prisma": "7.3.0",
+    "tsup": "8.5.1",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  },
+  "dependencies": {
+    "@fastify/cors": "11.2.0",
+    "@fastify/jwt": "10.0.0",
+    "@fastify/rate-limit": "10.3.0",
+    "@prisma/adapter-pg": "7.3.0",
+    "@prisma/client": "7.3.0",
+    "bcryptjs": "3.0.3",
+    "date-fns": "4.1.0",
+    "fastify": "5.7.1",
+    "fastify-type-provider-zod": "6.1.0",
+    "pg": "8.17.2",
+    "uuidv7": "1.1.0",
+    "zod": "4.3.5",
+    "zod-validation-error": "5.0.0"
+  }
+}
