@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { tokenAccess } from '@/services/tokenAcess'
+import { tokenAccess } from '@/services/tokenAccess'
 
 export async function multipleAcess(
   request: FastifyRequest,
