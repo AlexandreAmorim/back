@@ -1,0 +1,11 @@
+name: horus-local
+
+services:
+  pg:
+    image: kartoza/postgis
+    ports:
+      - '5431:5432'
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=horus
