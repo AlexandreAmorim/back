@@ -1,8 +1,9 @@
 ### Variáveis
-@baseUrl = http://localhost:3333
-@token =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMTliYjM1OS1kZDY4LTcyMmEtOGEwMi03YWQ3ZDUxNTdmZjkiLCJ0b2tlbiI6ImU0NmJhMGUxLTRlNTctNDkxOS1iY2JjLWZlMDczMDk3ZjY1OCIsImlhdCI6MTc2OTAyNDg1NCwiZXhwIjoxNzY5MDI1NzU0fQ.1DNLuuhmkjWJyQoR9ztvVBY8QNYnHs6SidRrSvRsERk
+@baseUrl = http://172.19.0.1:3333
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMTliZTMxMS1iYTE0LTdlNzYtYjViZS0yMGI3YTJmOGZlNWMiLCJ0b2tlbiI6ImQxMDNjYmJlLTM3ODktNDA1OS04NGM3LTc0MjQ4OTZkOGYyYSIsImlhdCI6MTc2OTA0Mzc4MywiZXhwIjoxNzY5MDQ0NjgzfQ.r_DFlEcCL2YaLWNvTvRm31MHSIONSVFZTvUPguIYhZg
+@refresh = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMTliZTMxMS1iYTE0LTdlNzYtYjViZS0yMGI3YTJmOGZlNWMiLCJ0b2tlbiI6ImQxMDNjYmJlLTM3ODktNDA1OS04NGM3LTc0MjQ4OTZkOGYyYSIsImlhdCI6MTc2OTA0Mzc4MywiZXhwIjoxNzY5MDQ1NTgzfQ.lEd1eJL5z48cjEJkB6SPHIWri0WlrDgxrgjz7qYzj5s
 
-GET {{baseUrl}}/health
+GET {{baseUrl}}/
 
 ### Login
 POST {{baseUrl}}/auth/login
@@ -13,6 +14,13 @@ Content-Type: application/json
   "password": "admin123"
 }
 
+
+### Refresh token
+POST {{baseUrl}}/auth/refresh-token
+Authorization: Bearer {{refresh}}
+
 ### Buscar dados do usuário autenticado
-GET {{baseUrl}}/api/users/me
+GET {{baseUrl}}/auth/me
 Authorization: Bearer {{token}}
+
+

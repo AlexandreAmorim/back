@@ -19,7 +19,10 @@ export async function getMeController(
     user: {
       ...user,
       name: `${user.firstName} ${user.lastName}`,
+      userId: undefined,
+      avatar: undefined,
       password: undefined,
+      token: undefined,
     },
   })
 }
