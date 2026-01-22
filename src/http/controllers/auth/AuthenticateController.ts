@@ -1,6 +1,6 @@
-import { env } from 'node:process'
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { z } from 'zod'
+import { env } from '@/config/env'
 import { InvalidCredentialsError } from '@/errors/InvalidCredentialsError'
 import { AuthenticateFactory } from '@/useCases/factories/AthenticateFactory'
 
@@ -33,7 +33,7 @@ export async function authenticateController(
       },
       {
         sign: {
-          expiresIn: env.TOKEN_EXPIRES_IN || '5m',
+          expiresIn: env.TOKEN_EXPIRES_IN,
         },
       },
     )
@@ -43,7 +43,7 @@ export async function authenticateController(
         sub: user.id,
         token: _token,
       },
-      { expiresIn: env.REFRESH_TOKEN_EXPIRES || '30m' },
+      { expiresIn: env.REFRESH_TOKEN_EXPIRES },
     )
 
     return reply.status(200).send({
