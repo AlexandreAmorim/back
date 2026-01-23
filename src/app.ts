@@ -5,6 +5,7 @@ import { fastify } from 'fastify'
 import { env } from './config/env'
 import { errorHandler } from './http/middlewares/errorHandler'
 import { authRoutes } from './http/routes/auth.routes'
+import { orderRoutes } from './http/routes/order.routes'
 import { userRoutes } from './http/routes/user.routes'
 
 export const app = fastify({})
@@ -52,3 +53,4 @@ app.setErrorHandler(errorHandler)
 // Registrar rotas
 app.register(authRoutes, { prefix: '/auth' })
 app.register(userRoutes, { prefix: '/api' })
+app.register(orderRoutes, { prefix: '/api' })
