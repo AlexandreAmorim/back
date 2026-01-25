@@ -4,7 +4,7 @@ import { getMeController } from '@/http/controllers/auth/GetMeController'
 import { previewController } from '@/http/controllers/auth/PreviewController'
 import { refreshController } from '@/http/controllers/auth/RefreshController'
 import { authenticate } from '../middlewares/authenticate'
-import { multipleAcess } from '../middlewares/multipleAccess'
+import { multipleAccess } from '../middlewares/multipleAccess'
 import { refresh } from '../middlewares/refresh'
 
 export async function authRoutes(app: FastifyInstance) {
@@ -30,7 +30,7 @@ export async function authRoutes(app: FastifyInstance) {
   app.route({
     url: '/me',
     method: 'GET',
-    preHandler: [authenticate, multipleAcess],
+    preHandler: [authenticate, multipleAccess],
     handler: getMeController,
   })
 }
